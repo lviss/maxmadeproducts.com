@@ -1,0 +1,52 @@
+name: Strip image metadata
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  strip-metadata:
+    runs-on: ubuntu-latest
+    # Forked-repo PRs get a read-only GITHUB_TOKEN and this job can't push the
+    # cleaned files back to them, so skip rather than fail confusingly - the
+    # documented contribution path (see README) only produces same-repo branches.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Find changed image files
+        id: changed
+        run: |
+          git diff --name-only --diff-filter=ACMR "${{ github.event.pull_request.base.sha }}" HEAD -- '*.jpg' '*.jpeg' '*.png' '*.webp' '*.tif' '*.tiff' > changed_images.txt
+          if [ -s changed_images.txt ]; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Auto-orient and strip metadata
+        if: steps.changed.outputs.has_changes == 'true'
+        run: |
+          while IFS= read -r f; do
+            [ -f "$f" ] && mogrify -auto-orient -strip -- "$f"
+          done < changed_images.txt
+
+      - name: Commit cleaned images back to the PR branch
+        if: steps.changed.outputs.has_changes == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          xargs -d '\n' -a changed_images.txt git add --
+          if ! git diff --cached --quiet; then
+            git commit -m "Strip metadata from uploaded images"
+            git push origin HEAD:"${{ github.event.pull_request.head.ref }}"
+          fi

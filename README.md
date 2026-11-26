@@ -57,6 +57,13 @@ On Windows or Linux, follow the [official docs](https://gohugo.io/installation/)
    ![A short description of the photo](product.jpg "A short description of the photo")
    ```
 
+   Don't worry about metadata hidden in your photo (GPS location, phone/camera make and model,
+   etc.) — once your pull request is open, a GitHub Actions workflow automatically strips that
+   out of any new or changed image and commits the cleaned file back onto your PR branch, so it
+   never ends up on the public site. This only works for PRs opened from a branch of this repo
+   (the flow both methods below produce) — a PR from a fork of this repo would need a maintainer
+   to strip the image by hand before merging.
+
 ## Preview locally
 
 Before sharing your changes, you can see exactly how they'll look on the real site:
