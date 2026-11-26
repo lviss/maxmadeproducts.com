@@ -18,6 +18,11 @@ a real deploy.
 - `static/CNAME` (containing exactly `maxmadeproducts.com`) is what makes GitHub Pages keep
   the custom domain across each rebuild — don't delete it.
 - DNS for `maxmadeproducts.com` is outside this repo.
+- The repo's GitHub PAT cannot enable Pages itself: `POST .../pages` 403s with "Insufficient
+  permissions for this action" (a plain `GET` on an already-enabled repo's Pages settings does
+  work, so this is specifically an enable/write limitation). Enabling Pages (Actions build type +
+  custom domain) currently has to be done by a human in the GitHub UI, or the token needs broader
+  permissions.
 
 ## Maintaining this file
 
