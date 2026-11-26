@@ -1,0 +1,6 @@
+baseURL: 'https://maxmadeproducts.com/'
+locale: 'en-us'
+title: 'Max Made Products'
+theme: 'papermod'
+params:
+  hideFooter: true
